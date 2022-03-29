@@ -17,7 +17,7 @@ included in this architecture yet, and this is what has been explored with the p
 
 ## Contributors
 - Rémi Dromnelle
-- Jeanne Barthélémy
+- [Jeanne Barthélemy](https://github.com/Gaerdil)
 - Julien Canitrot
 - [Elisa Massi](https://github.com/elimas9) 
 
