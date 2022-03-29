@@ -1,0 +1,10 @@
+numpy
+matplotlib
+scipy
+seaborn
+Pillow
+pandas
+keras
+tensorflow
+colorama
+tqdm

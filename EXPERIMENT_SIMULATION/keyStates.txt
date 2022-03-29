@@ -1,0 +1,8 @@
+# The states where the agent start the experiment and come back after obtains the reward
+init 0 32
+# The state which gives reward / the value of its reward
+goal 18 1
+# The iteration when the rewarded state changes 1601/ the number of the state / the value of its reward
+new_goal 1601 34 1
+# The iteration when a wall is added 1601 / the position of the new wall / the position of the new wall
+new_wall 1601 20-21 6-7

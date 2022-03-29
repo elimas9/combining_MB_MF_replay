@@ -1,0 +1,2 @@
+cellradius: 0.35
+durb3: -1
