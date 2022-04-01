@@ -12,6 +12,7 @@ behavior) to learn the task.
 from utility import *
 import numpy as np
 import json
+import datetime
 
 
 VERSION = 1
@@ -28,7 +29,7 @@ class ValueIterationShuffle:
 		"""
 		Initialise values and models
 		"""
-		# ----------------------------------------------------------------------------
+		
 		# --- KEEP TRACK OF INFER & SIMULATION REPLAY CYCLES ---
 		self.infer_cycles = 0 # keeps track of the number of random infer cycles
 		self.infer_cycles_tot = 0
@@ -46,8 +47,6 @@ class ValueIterationShuffle:
 		# --- VARIABLE TO KEEP TRACK OF THE ESTIMATION ERROR ---
 		self.deltas = [{} for a in range(action_space)] # Will keep track of the deltas (per state-action)
 
-
-		# ----------------------------------------------------------------------------
 		self.experiment = experiment
 		self.max_reward = boundaries_exp["max_reward"]
 		self.duration = boundaries_exp["duration"]
@@ -69,7 +68,7 @@ class ValueIterationShuffle:
 		self.action_space = action_space
 		init_actions_prob = initial_variables["actions_prob"]
 		self.not_learn = False
-		# ----------------------------------------------------------------------------
+		
 		# // List and dicts for store data //
 		# Create the list of states
 		self.list_states = list()
@@ -97,10 +96,6 @@ class ValueIterationShuffle:
 		self.dict_delta_prob = dict()
 		self.dict_delta_prob["actioncount"] = action_count
 		self.dict_delta_prob["values"] = dict()
-		# Create a dict that contains the probability of actions for each states
-		#self.dict_decision = dict()
-		#self.dict_decision["actioncount"] = action_count
-		#self.dict_decision["values"] = list()
 		# Create a dict that contains the time of planification for each states
 		self.dict_duration = dict()
 		self.dict_duration["actioncount"] = action_count
@@ -113,7 +108,6 @@ class ValueIterationShuffle:
 		self.base_it_replay = 500
 		self.tau = np.power(self.epsilon / self.base_it_replay, 1 / self.base_it_replay)
 
-		# -----------------------------------------------------------------------------
 		# Load the transition model which will be used as map
 		with open(map_file,'r') as file2:
 			self.map = json.load(file2)
@@ -121,29 +115,23 @@ class ValueIterationShuffle:
 		for state in self.map["transitionActions"]:
 			s = str(state["state"])
 			t = state["transitions"]
-			# -----------------------------------------------------------------------
+			
 			self.dict_qvalues[(s,"qvals")] = [self.init_qvalue]*8
 			self.dict_qvalues[(s,"visits")] = 0
-			# -----------------------------------------------------------------------
+			
 			# - initialise the probabilties of actions
-			# self.dict_actions_prob["values"].append({"state": s, "actions_prob": [init_actions_prob]*8, "filtered_prob": [init_actions_prob]*8})
-			self.dict_actions_prob["values"][s]={ "actions_prob": [init_actions_prob]*8, "filtered_prob": [init_actions_prob]*8}
-			# -------------------------------------------------------------------------
-			# - initialise the "identity of the selected action" dict
-			#self.dict_decision["values"].append({"state": s, "history_decisions": [[0]*self.window_size,[0]*self.window_size,[0]*self.window_size,[0]*self.window_size,[0]*self.window_size,[0]*self.window_size,[0]*self.window_size,[0]*self.window_size]})
-			# -----------------------------------------------------------------------
+			self.dict_actions_prob["values"][s]={ "actions_prob": [init_actions_prob]*8,
+												  "filtered_prob": [init_actions_prob]*8}
+
 			# - initialise the delta prob dict
-			# self.dict_delta_prob["values"].append({"state": s, "delta_prob": init_delta})
 			self.dict_delta_prob["values"][s]={ "delta_prob": init_delta}
-			# -------------------------------------------------------------------------
+			
 			# - initialise the duration dict
 			 
 			self.dict_duration["values"][s]={"duration": 0.0} 
 
-		# I COMMENTED THIS PART BELOW FOR THE LOGS BECAUSE I DID NOT USE IT
-		# -----------------------------------------------------------------------------
+
 		# Initialise logs
-		#print(self.dict_actions_prob)
 		if self.log == True:
 			self.directory_flag = False
 			try:
@@ -162,92 +150,87 @@ class ValueIterationShuffle:
 				os.makedirs(directory)
 			os.chdir(directory) 
 			self.directory_flag = True
-			# -------------------------------------------------------------------------
+			
 			prefixe = "v"+str(VERSION)+"_TBMB_exp"+str(self.experiment)+"_"
-			# -------------------------------------------------------------------------
+			
 			self.reward_log = open(prefixe+'reward_log.dat', 'w')
 			self.reward_log.write("timecount"+" "+str(action_count)+" "+str(init_reward)+" "+"currentTime-nodeStartTime"+" "+"currentTime"+"\n")
-			# -------------------------------------------------------------------------
+			
 			self.states_evolution_log = open(prefixe+'statesEvolution_log.dat', 'w')
 			self.states_evolution_log.write("timecount"+" "+str(action_count)+" "+current_state+" "+previous_state+" "+"currentContactState"+ \
 				" "+"currentViewState"+" "+str(decided_action)+"currentTime-nodeStartTime"+" "+"currentTime"+"\n")
-			# -------------------------------------------------------------------------
-			# self.qvalues_evolution_log = open(prefixe+'qvaluesEvolution_log.dat', 'w')
-			# self.qvalues_evolution_log.write('{\n"logs" :\n['+json.dumps(self.dict_qvalues))#error key = tuple doesnt work in json
-			# -----------------------------------------------------------------------
+
 			self.actions_evolution_log = open(prefixe+'actions_evolution_log.dat', 'w')
 			self.actions_evolution_log.write('{\n"logs" :\n['+json.dumps(self.dict_actions_prob))
-			# -------------------------------------------------------------------------
+			
 			self.monitoring_values_log = open(prefixe+'monitoring_values_log.dat', 'w')
 			self.monitoring_values_log.write(str(action_count)+" "+str(init_plan_time)+" "+str(init_delta)+" "+str(init_delta)+" "+str(init_delta)+"\n")
-		# -----------------------------------------------------------------------------
+		
 			os.chdir("../../../")
-		# -----------------------------------------------------------------------------
+		
 
 
 	def __del__(self):
 		"""
 		Close all log files
 		"""
-		# -----------------------------------------------------------------------------
+		
 		if self.log == True:
 			self.reward_log.close()
-			# self.qvalues_evolution_log.close()
 			self.actions_evolution_log.close()
 			self.states_evolution_log.close()
 			self.monitoring_values_log.close()
-		# -----------------------------------------------------------------------------
+		
 
 
 	def get_actions_prob(self, current_state):
 		"""
 		Get the probabilities of actions of the current state
 		"""
-		# print(self.dict_actions_prob["value"])
-		# ----------------------------------------------------------------------------
+
 		return get_filtered_prob(self.dict_actions_prob, current_state)
-		# ----------------------------------------------------------------------------
+		
 
 	def get_plan_time(self, current_state):
 		"""
 		Get the time of planification for the current state
 		"""
-		# ----------------------------------------------------------------------------
+		
 		return get_duration(self.dict_duration, current_state)
-		# ----------------------------------------------------------------------------
+		
 
 
 	def decide(self, current_state, qvalues):
 		"""
 		Choose the next action using soft-max policy
 		"""
-		# ----------------------------------------------------------------------------
+		
 		actions = dict()
 		qvals = dict()
-		# ----------------------------------------------------------------------------
+		
 		for a in range(0,8):
 			actions[str(a)] = a
-			qvals[str(a)] = qvalues[a] #repassage en mode dico pour compatibilité avec les fonctions de Rémi
-		# ----------------------------------------------------------------------------
+			qvals[str(a)] = qvalues[a]
+		
 		# Soft-max function
 		actions_prob = softmax_actions_prob(qvals, self.beta)
 		new_probs = list()
 		for action, prob in actions_prob.items():
 			new_probs.append(prob)
 		set_actions_prob(self.dict_actions_prob, current_state, new_probs)
-		# -------------------------------------------------------------------------
+		
 		# For each action, sum the probabilities of selection with a low pass filter
 		old_probs = get_filtered_prob(self.dict_actions_prob, current_state)
 		filtered_actions_prob = list()
 		for a in range(0,len(new_probs)):
 			filtered_actions_prob.append(low_pass_filter(self.alpha, old_probs[a], new_probs[a]))
 		set_filtered_prob(self.dict_actions_prob, current_state, filtered_actions_prob)
-		# ----------------------------------------------------------------------------
+		
 		# The end of the soft-max function
 		decision, choosen_action = softmax_decision(actions_prob, actions)
-		# ---------------------------------------------------------------------------
+		
 		return choosen_action, actions_prob
-		# ----------------------------------------------------------------------------
+		
 
 
 	def update_qvalue(self, this_state, this_action):#modified_fct
@@ -255,7 +238,7 @@ class ValueIterationShuffle:
 		Value iteration update, for just 1 state-action couple
 		
 		"""
-		# -----------------------------------------------------------------------------
+		
 		flag = False
 		accu = 0.0
 		reward = get_reward(self.dict_rewards, this_state, this_action)
@@ -296,12 +279,11 @@ class ValueIterationShuffle:
 		 it is just used for convergence estimation, by updating self.deltas
 		:param this_state: a state of the environment
 		"""
-		#  -----------------------------------------------------------------------------
 		for action in self.list_actions[this_state]:  # LOOP ACTIONS
 			self.deltas[action][this_state] = self.get_state_action_delta(this_state, action)
 
 
-	def get_state_action_delta(self,this_state, action):#modified_fct
+	def get_state_action_delta(self,this_state, action):
 		"""
 		This function is a helper function to update the list of deltas
 		:param this_state: a state of the environment
@@ -313,7 +295,6 @@ class ValueIterationShuffle:
 		previous_qvalue = self.dict_qvalues[(str(this_state), "qvals")][action]
 		accu = 0.0
 		reward = get_reward(self.dict_rewards, this_state, action)
-		#
 		# loop througth the transitions a changer
 		for arrival in self.dict_transitions["transitionActions"][this_state]["transition"][action]:
 	
@@ -359,12 +340,10 @@ class ValueIterationShuffle:
 		state_value = np.array([v for action in range(self.action_space) for k,v in self.deltas[action].items()])  #check dtype
 		return np.sum(np.abs(state_value))
 
-#################################################################################
-
 
 	def infer(self, current_state):
 		"""
-			In the MB expert, the process of inference consists to do planning using models of the world.
+		In the MB expert, the process of inference consists to do planning using models of the world.
 		/!\ One cycle corresponds to only ONE application of self.update_qvalue(state, action)
 		"""
 
@@ -376,7 +355,6 @@ class ValueIterationShuffle:
 
 		activated = np.zeros((self.action_space, self.num_states))
 
-		# TODO : change the implementation in case of very large spaces (keep basic structure, only add newly found state/action pairs
 		while True:
 			# The number of states-actions in the list is constant in one single call to self.infer function
 			if len(self.shuffled_list_states_actions) == 0 or cycle%len(self.shuffled_list_states_actions) == 0 :
@@ -422,7 +400,7 @@ class ValueIterationShuffle:
 
 			self.infer_cycles = cycle
 			self.infer_cycles_tot +=cycle
-			
+
 			# Stop VI when convergence
 			# Stop VI when convergence
 			# self.new_deltas[a][int(s)] = np.abs(new_qvalue - previous_qvalue)
@@ -441,12 +419,6 @@ class ValueIterationShuffle:
 			ci.append(convergence_indicator)
 			if convergence_indicator < self.epsilon:
 				break
-
-		'''if cycle > 1:
-			print(f"crit: {ci[-1]}")
-			print(f"replay_cycles: {cycle}")
-			plt.plot(ci)
-			plt.show()'''
 		return self.dict_qvalues[(str(current_state),"qvals")]
 
 
@@ -455,20 +427,20 @@ class ValueIterationShuffle:
 		"""
 		Update the the model of reward
 		"""
-		# ----------------------------------------------------------------------------
+		
 		for state in self.dict_goals["values"]:
-			# ------------------------------------------------------------------------
+			
 			# Change potentially the reward of the rewarded state
 			if state["state"] == current_state:
 				state["reward"] = reward_obtained
-			# ------------------------------------------------------------------------
+			
 			for link in state["links"]:
 				action = link[0]
 				previous_state = link[1]
 				prob = get_transition_prob(self.dict_transitions, previous_state, action, state["state"])
 				relative_reward = prob  * state["reward"]
 				set_reward(self.dict_rewards, previous_state, action, relative_reward)
-				# --------------------------------------------------------------------
+
 
 
 	def update_prob(self, previous_state, action, current_state):
@@ -477,48 +449,38 @@ class ValueIterationShuffle:
 		window of previously encountered transitions.
 		Therefore, the greater the probability window is, the better the proba estimation is.
 		"""
-		# ----------------------------------------------------------------------------
-		delta_prob = 0.0 
+		delta_prob = 0.0
 		nb_transitions = get_number_transitions(self.dict_transitions, previous_state, action)
 		sum_nb_transitions = sum(nb_transitions.values())
 		probs = get_transition_probs(self.dict_transitions, previous_state, action)
-		# ----------------------------------------------------------------------------
 		for arrival, old_prob in probs.items():
 			new_prob = nb_transitions[arrival]/sum_nb_transitions
 			set_transition_prob(self.dict_transitions, previous_state, action, arrival, new_prob)
 			delta_prob += abs(new_prob - old_prob)
 		probs = get_transition_probs(self.dict_transitions, previous_state, action)
-		# ----------------------------------------------------------------------------
 
 
 	def learn(self, previous_state, action, current_state, reward_obtained):
-
 		"""
 		Update the contents of the rewards and the transitions model
 		"""
-		
-		# ----------------------------------------------------------------------------
+
 		# // Update the transition model //
 		self.update_prob(previous_state, action, current_state)
 		
-		# ----------------------------------------------------------------------------
 		# // Update the reward model //
 		self.update_reward(current_state, reward_obtained)
-		# ----------------------------------------------------------------------------
 
 
 	def update_data_structure(self, action_count, previous_state, action, current_state, reward_obtained):#modified_fct
 		"""
 		Update the data structure of the rewards and the transitions models
 		"""
-		# ----------------------------------------------------------------------------
 		self.dict_qvalues[(str(current_state),"actioncount")] = action_count
 		self.dict_transitions["actioncount"] = action_count
 		self.dict_rewards["actioncount"] = action_count
-		# ----------------------------------------------------------------------------
 		# For the modelof qvalues, update only the number of visit
 		self.dict_qvalues[(str(previous_state),"visits")] += 1
-		# ----------------------------------------------------------------------------
 		# If the previous state is unknown, add it in the states model, in the reward model and in the transition model
 		# (not needful for the model of q-values because it has already is final size)
 		if previous_state not in self.list_states:#change this
@@ -542,21 +504,13 @@ class ValueIterationShuffle:
 					# If the transition doesn't exist, add it
 					else:
 						add_transition(self.dict_transitions, previous_state, action, current_state, 0, self.window_size)
-										
-					
-		# # Else delete from the list of state
-		# else:
-		# 	while previous_state in self.list_states:
-		# 		del self.list_states[self.list_states.index(previous_state)]
-		# ----------------------------------------------------------------------------
+
 		# Check if the agent already known goals and neighbours
 		
 		if reward_obtained != 0.0:
-			# ------------------------------------------------------------------------
 			# If none goal is known, add it in the dict with this neighbour
 			if not self.dict_goals["values"]:
 				self.dict_goals["values"].append({"state": current_state, "reward": reward_obtained, "links": [(action, previous_state)]})
-			# ------------------------------------------------------------------------
 			# Check if this goal is already known
 			known_goal = False
 			for state in self.dict_goals["values"]:
@@ -567,11 +521,9 @@ class ValueIterationShuffle:
 						if link[0] == action and link[1] == previous_state:
 							known_link = True
 							break
-					# ----------------------------------------------------------------
 					if known_link == False:
 						state["links"].append((action, previous_state))
 					break
-			# ------------------------------------------------------------------------
 			if known_goal == False:
 				self.dict_goals["values"].append({"state": current_state, "reward": reward_obtained, "links": [(action, previous_state)]})
 				# delete transitions and possible actions for current_state
@@ -580,37 +532,28 @@ class ValueIterationShuffle:
 					self.dict_transitions["transitionActions"][current_state]["transition"]=dict()
 				for i in range (self.action_space):
 					self.list_actions[current_state] = []
-				
-		# ----------------------------------------------------------------------------
-	
+
 
 	def run(self, action_count, cumulated_reward, reward_obtained, previous_state, decided_action, current_state, do_we_plan): 
 		"""
 		Run the model-based system
 		"""
-		# ----------------------------------------------------------------------------
 		# Update the actioncount and the number of the visits for the previous state
 		self.dict_duration["actioncount"] = action_count
 		self.dict_delta_prob["actioncount"] = action_count
 		self.dict_qvalues[(str(current_state),"actioncount")] = action_count
 		self.dict_qvalues[(str(previous_state),"visits")] += 1
-		# ----------------------------------------------------------------------------
 		# Update the data structure of the models (states, rewards, transitions, qvalues)
 		self.update_data_structure(action_count, previous_state, decided_action, current_state, reward_obtained)
-		# ----------------------------------------------------------------------------
 		if self.not_learn == False:
 		# Update the transition model and the reward model according to the learning.
 			self.learn(previous_state, decided_action, current_state, reward_obtained)
-		# ----------------------------------------------------------------------------
 		# If the expert was chosen to plan, update all the q-values by planning
 		
 		if do_we_plan: 
-			# ------------------------------------------------------------------------
 			old_time = datetime.datetime.now()
-			# ------------------------------------------------------------------------
 			# Run the planning process
 			qvalues = self.infer(current_state) # INFERENCE & SIMULATION
-			# ------------------------------------------------------------------------
 			# Sum the duration of planification with a low pass filter
 			current_time = datetime.datetime.now()
 			new_plan_time = (current_time - old_time).total_seconds()
@@ -619,13 +562,10 @@ class ValueIterationShuffle:
 			set_duration(self.dict_duration, current_state, filtered_time)
 		else:
 			qvalues = self.dict_qvalues[(str(current_state),"qvals")]
-		# ----------------------------------------------------------------------------
 		# Choose the next action to do from the current state using soft-max policy.
 		decided_action, actions_prob = self.decide(current_state, qvalues)
-		# -------------------------------------------------------------------------
 		plan_time = get_duration(self.dict_duration, current_state)
 		selection_prob = get_filtered_prob(self.dict_actions_prob, current_state)
-		# ----------------------------------------------------------------------------
 		if reward_obtained > 0.0:
 			self.not_learn = True
 			for a in range(self.action_space):
@@ -638,23 +578,18 @@ class ValueIterationShuffle:
 			self.qvalues_evolution_log.write(",\n"+json.dumps(self.dict_qvalues))
 			self.actions_evolution_log.write(",\n"+json.dumps(self.dict_actions_prob))
 			self.monitoring_values_log.write(str(action_count)+" "+str(decided_action)+" "+str(plan_time)+" "+str(selection_prob)+" "+str(prefered_action)+"\n")
-		# ----------------------------------------------------------------------------
 		#Finish the logging at the end of the simulation (duration or max reward)
 		if (action_count == self.duration) or (cumulated_reward == self.max_reward):
 			if self.log == True:
 				self.actions_evolution_log.write('],\n"name" : "Actions"\n}')
-			# ------------------------------------------------------------------------
 			# Build the summary file
 			if self.summary == True:
 				if self.directory_flag == True:
 					os.chdir("../")
-				# --------------------------------------------------------------------
 				prefixe = 'v%d_TBMB_'%(VERSION)
 				self.summary_log = open(prefixe+'summary_log.dat', 'a')
 				self.summary_log.write(str(self.gamma)+" "+str(self.beta)+" "+str(cumulated_reward)+"\n")
-		#---------------------------------------------------------------------------
 		return decided_action
-		# ----------------------------------------------------------------------------
 
 
 

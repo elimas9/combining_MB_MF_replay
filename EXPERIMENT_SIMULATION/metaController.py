@@ -13,6 +13,7 @@ from utility import *
 import json
 import datetime
 import os
+import math
 
 VERSION = 1
 
@@ -28,7 +29,6 @@ class MetaController:
 		"""
 		Iinitialise values and models
 		"""
-		# ---------------------------------------------------------------------------
 		self.agent_model_based = agent_model_based
 		self.agent_model_free = agent_model_free
 		self.experiment = experiment
@@ -89,31 +89,34 @@ class MetaController:
 								  "|bi_budget_"+str(self.agent_model_based.module.bidirectional_budget)+\
 								  "|delta_threshold_"+str(self.agent_model_based.module.delta_threshold)+")"
 
-########################################################################################################################
 			if self.criterion== 'MF_only':
-				self.fileName = str(self.criterion) +"_MF_["+self.agent_model_free.module_type +"]" + mf_special_vals+"_coeff"+str(self.coeff_kappa)+"_exp"+str(self.experiment)+"_log.dat"
+				self.fileName = str(self.criterion) +"_MF_["+self.agent_model_free.module_type +"]" +\
+								mf_special_vals+"_coeff"+str(self.coeff_kappa)+"_exp"+str(self.experiment)+"_log.dat"
 				self.MC_log = open(self.fileName, "w")
-				# self.MC_log = open(str(self.criterion)+"_MB_["+self.agent_model_based.module_type+"]" + mb_special_vals+"_MF_["+self.agent_model_free.module_type +"]"+"_window"+str(agent_model_based.module.window_size)+"_log.dat", "w")
 				print(self.fileName)
-				self.MC_log.write(str(action_count)+" "+str(current_state)+" "+str(initial_reward)+" "+str(initial_duration)+" "+str(replays)+" MB 0.5 0.0 0.0 0.0 0\n")
+				self.MC_log.write(str(action_count)+" "+str(current_state)+" "+str(initial_reward)+" "+
+								  str(initial_duration)+" "+str(replays)+" MB 0.5 0.0 0.0 0.0 0\n")
 
 			elif self.criterion== 'MB_only':
-				self.fileName = str(self.criterion)+"_MB_["+self.agent_model_based.module_type+"]" + mb_special_vals+"_window"+str(agent_model_based.module.window_size)+"_coeff"+str(self.coeff_kappa)+"_exp"+str(self.experiment)+"_log.dat"
+				self.fileName = str(self.criterion)+"_MB_["+self.agent_model_based.module_type+"]" + mb_special_vals+\
+								"_window"+str(agent_model_based.module.window_size)+"_coeff"+str(self.coeff_kappa)+\
+								"_exp"+str(self.experiment)+"_log.dat"
 				self.MC_log = open(self.fileName, "w")
-				# self.MC_log = open(str(self.criterion)+"_MB_["+self.agent_model_based.module_type+"]" + mb_special_vals+"_MF_["+self.agent_model_free.module_type +"]"+"_window"+str(agent_model_based.module.window_size)+"_log.dat", "w")
 				print(self.fileName)
-				self.MC_log.write(str(action_count)+" "+str(current_state)+" "+str(initial_reward)+" "+str(initial_duration)+" "+str(replays)+" MB 0.5 0.0 0.0 0.0 0\n")
+				self.MC_log.write(str(action_count)+" "+str(current_state)+" "+str(initial_reward)+" "+
+								  str(initial_duration)+" "+str(replays)+" MB 0.5 0.0 0.0 0.0 0\n")
 
 			else:
-				self.fileName = str(self.criterion)+"_MB_["+self.agent_model_based.module_type+"]" + mb_special_vals+"_MF_["+self.agent_model_free.module_type +"]" + mf_special_vals+"_window"+str(agent_model_based.module.window_size)+"_coeff"+str(self.coeff_kappa)+"_exp"+str(self.experiment)+"_log.dat"
+				self.fileName = str(self.criterion)+"_MB_["+self.agent_model_based.module_type+"]" + mb_special_vals+\
+								"_MF_["+self.agent_model_free.module_type +"]" + mf_special_vals+"_window"+\
+								str(agent_model_based.module.window_size)+"_coeff"+str(self.coeff_kappa)+"_exp"+\
+								str(self.experiment)+"_log.dat"
 				print(self.fileName)
 				self.MC_log = open(self.fileName, "w")
-				# self.MC_log = open(str(self.criterion)+"_MB_["+self.agent_model_based.module_type+"]" + mb_special_vals+"_MF_["+self.agent_model_free.module_type +"]"+"_window"+str(agent_model_based.module.window_size)+"_log.dat", "w")
-				
-				self.MC_log.write(str(action_count)+" "+str(current_state)+" "+str(initial_reward)+" "+str(initial_duration)+" "+str(replays)+" MB 0.5 0.0 0.0 0.0 0\n")
-		# ---------------------------------------------------------------------------
+
+				self.MC_log.write(str(action_count)+" "+str(current_state)+" "+str(initial_reward)+" "
+								  +str(initial_duration)+" "+str(replays)+" MB 0.5 0.0 0.0 0.0 0\n")
 		os.chdir("..")
-		# ---------------------------------------------------------------------------
 
 
 	def entropy_and_time(self, duration, selection_prob):
@@ -124,44 +127,29 @@ class MetaController:
 
 		--> stochastic expert choice is possible , but not yet enabled
 		"""
-		# ---------------------------------------------------------------------------
 		norm_probs_MF = [prob / sum(selection_prob["MF"]) for prob in selection_prob["MF"]]
 		norm_probs_MB = [prob / sum(selection_prob["MB"]) for prob in selection_prob["MB"]]
-		# ---------------------------------------------------------------------------
 		entropy_probs_MF = shanon_entropy(norm_probs_MF)
-		#print("Entropy MF :"+str(entropy_probs_MF))
 		entropy_probs_MB = shanon_entropy(norm_probs_MB)
-		#print("Entropy MB :"+str(entropy_probs_MB))
-		# ---------------------------------------------------------------------------
-		max_entropy = shanon_entropy([1/(len(norm_probs_MF))]*len(norm_probs_MF)) # all probas, uniform probability law case
+		max_entropy = shanon_entropy([1/(len(norm_probs_MF))]*len(norm_probs_MF)) # all probas, uniform probability
+		# law case
 		highest_entropy = max(entropy_probs_MF,entropy_probs_MB)
 		mean_entropy = (entropy_probs_MF + entropy_probs_MB) / 2
-		# ---------------------------------------------------------------------------
 		norm_entropy_MF = entropy_probs_MF / max_entropy
 		norm_entropy_MB = entropy_probs_MB / max_entropy
 		self.norm_entropy = {"MF": norm_entropy_MF, "MB": norm_entropy_MB}
-		#print("Norm entropy MF: "+str(norm_entropy_MF))
-		#print("Norm entropy MB: "+str(norm_entropy_MB))
-		# ---------------------------------------------------------------------------
+
 		max_duration = max(duration["MF"],duration["MB"])
 		if max_duration == 0.0:
 			max_duration = 0.000000000001
 		norm_duration_MF = (duration["MF"]) / max_duration
 		norm_duration_MB = (duration["MB"]) / max_duration
-		# ---------------------------------------------------------------------------
 		coeff  = math.exp(-entropy_probs_MF * self.coeff_kappa)
-		#print("Coeff = exp(-"+str(entropy_probs_MF)+" * "+str(self.coeff_kappa)+") = "+str(coeff))
-		# ---------------------------------------------------------------------------
+
 		qval_MF = - (norm_entropy_MF + coeff * norm_duration_MF)
-		#print("Qval MF : - ("+str(norm_entropy_MF)+" + "+str(coeff)+" * "+str(norm_duration_MF)+")) = "+str(qval_MF))
 		qval_MB = - (norm_entropy_MB + coeff * norm_duration_MB)
-		#print("Qval MB : - ("+str(norm_entropy_MB)+" + "+str(coeff)+" * "+str(norm_duration_MB)+")) = "+str(qval_MB))
 		qvalues = {"MF": qval_MF, "MB": qval_MB}
-		# ---------------------------------------------------------------------------
-		# Soft-max function
-		#final_actions_prob = softmax_actions_prob(qvalues, self.beta_MC)
-		#expert, final_decision = softmax_decision(final_actions_prob, decisions)
-		# ---------------------------------------------------------------------------
+
 		# Arg-max function
 		final_actions_prob = softmax_actions_prob(qvalues, self.beta_MC)
 		if qval_MF > qval_MB:
@@ -178,9 +166,7 @@ class MetaController:
 			elif randval < 0.50000000:
 				expert = "MB"
 				who_plan = {"MF": False, "MB": True}
-		# ---------------------------------------------------------------------------
 		return final_actions_prob, who_plan
-		# ---------------------------------------------------------------------------
 
 
 	def entropy_only(self, selection_prob):
@@ -190,35 +176,22 @@ class MetaController:
 
 		---> stochastic expert choice is possible, but not yet enabled
 		"""
-		# ---------------------------------------------------------------------------
 		norm_probs_MF = [prob / sum(selection_prob["MF"]) for prob in selection_prob["MF"]]
 		norm_probs_MB = [prob / sum(selection_prob["MB"]) for prob in selection_prob["MB"]]
-		# ---------------------------------------------------------------------------
 		entropy_probs_MF = shanon_entropy(norm_probs_MF)
-		#print("Entropy MF :"+str(entropy_probs_MF))
 		entropy_probs_MB = shanon_entropy(norm_probs_MB)
-		#print("Entropy MB :"+str(entropy_probs_MB))
-		# ---------------------------------------------------------------------------
+
 		max_entropy = shanon_entropy([1/(len(norm_probs_MF))]*len(norm_probs_MF))
 		highest_entropy = max(entropy_probs_MF,entropy_probs_MB)
 		mean_entropy = (entropy_probs_MF + entropy_probs_MB) / 2
-		# ---------------------------------------------------------------------------
 		norm_entropy_MF = entropy_probs_MF / max_entropy
 		norm_entropy_MB = entropy_probs_MB / max_entropy
 		self.norm_entropy = {"MF": norm_entropy_MF, "MB": norm_entropy_MB}
-		#print("Norm entropy MF: "+str(norm_entropy_MF))
-		#print("Norm entropy MB: "+str(norm_entropy_MB))
-		# ---------------------------------------------------------------------------
+
 		qval_MF = - (norm_entropy_MF)
-		#print("Qval MF : - "+str(norm_entropy_MF)+") = "+str(qval_MF))
 		qval_MB = - (norm_entropy_MB)
-		#print("Qval MB : - "+str(norm_entropy_MB)+") = "+str(qval_MB))
 		qvalues = {"MF": qval_MF, "MB": qval_MB}
-		# ---------------------------------------------------------------------------
-		# Soft-max function
-		#final_actions_prob = softmax_actions_prob(qvalues, self.beta_MC)
-		#expert, final_decision = softmax_decision(final_actions_prob, decisions)
-		# ---------------------------------------------------------------------------
+
 		# Arg-max function
 		final_actions_prob = softmax_actions_prob(qvalues, self.beta_MC)
 		if qval_MF >= qval_MB:
@@ -227,9 +200,7 @@ class MetaController:
 		else:
 			expert = "MB"
 			who_plan = {"MF": False, "MB": True}
-		# ---------------------------------------------------------------------------
 		return final_actions_prob, who_plan
-		# ---------------------------------------------------------------------------
 
 
 	def only_one(self, selection_prob, expert):
@@ -239,7 +210,6 @@ class MetaController:
 		--> like entropy_only, but deterministic expert choice only (argmax)
 		some normalized entropy is therefore computed but useless
 		"""
-		# ---------------------------------------------------------------------------
 		norm_probs_MF = [prob / sum(selection_prob["MF"]) for prob in selection_prob["MF"]]
 		norm_probs_MB = [prob / sum(selection_prob["MB"]) for prob in selection_prob["MB"]]
 		entropy_probs_MF = shanon_entropy(norm_probs_MF)
@@ -247,8 +217,7 @@ class MetaController:
 		max_entropy = shanon_entropy([1/(len(norm_probs_MF))]*len(norm_probs_MF))
 		norm_entropy_MF = entropy_probs_MF / max_entropy
 		norm_entropy_MB = entropy_probs_MB / max_entropy
-		# ---------------------------------------------------------------------------
-		if expert == "MF": 
+		if expert == "MF":
 			who_plan = {"MF": True, "MB": False}
 			final_actions_prob = {"MF": 1, "MB": 0}
 			self.norm_entropy = {"MF": norm_entropy_MF, "MB": 0.0}
@@ -256,17 +225,13 @@ class MetaController:
 			who_plan = {"MF": False, "MB": True}
 			final_actions_prob = {"MF": 0, "MB": 1}
 			self.norm_entropy = {"MF": 0.0, "MB": norm_entropy_MB}
-		# ---------------------------------------------------------------------------
 		return final_actions_prob, who_plan
-		# ---------------------------------------------------------------------------
 
 
 	def random(self):
 		"""
 		Choose the action between those proposed randomly
 		"""
-		# ---------------------------------------------------------------------------
-		#print("Decisions :"+str(decisions))
 		randval = np.random.rand()
 		if randval <= 0.500000000:
 			who_plan = {"MF": True, "MB": False}
@@ -274,19 +239,15 @@ class MetaController:
 		elif randval > 0.50000000:
 			who_plan = {"MF": False, "MB": True}
 			self.norm_entropy = {"MF": 0.0, "MB": 0.0}
-		# ---------------------------------------------------------------------------
 		final_actions_prob = {"MF": 0.5, "MB": 0.5}
-		# ---------------------------------------------------------------------------
 		return final_actions_prob, who_plan
-		# ---------------------------------------------------------------------------
 
 
 	def decide(self, plan_time, selection_prob):
 		"""
 		Choose the action between those proposed according to the choosen criteria
 		"""
-		# ---------------------------------------------------------------------------
-		if self.criterion == "random": 
+		if self.criterion == "random":
 			final_actions_prob, who_plan = self.random()
 		elif self.criterion == "MF_only":
 			final_actions_prob, who_plan = self.only_one(selection_prob, "MF") 
@@ -299,9 +260,7 @@ class MetaController:
 
 		else:
 			sys.exit("This criterion is unknown. Retry with a good one.")
-		# ---------------------------------------------------------------------------
 		return final_actions_prob, who_plan  # final action prob are probs, who plan makes only one be set to True
-		# ---------------------------------------------------------------------------
 
 
 	def run(self, action_count, reward_obtained, current_state, plan_time, selection_prob):
@@ -311,37 +270,28 @@ class MetaController:
 
 		--> selection probs : probs of actions for each agent (MF, MB ...) , not probs of selection of agent
 		"""
-		# ---------------------------------------------------------------------------
 		old_time = datetime.datetime.now()
-		# ---------------------------------------------------------------------------
-		#print("------------------------ MC --------------------------------")
-		#print("Plan time : "+str(plan_time))
-		#print("Probability of actions : "+str(selection_prob))
-		#print("Repartition of the prefered actions : "+str(prefered_action))
-		# ---------------------------------------------------------------------------
+
 		# Decide betwen the two experts accoring to the choosen criterion
 		final_actions_prob, who_plan = self.decide(plan_time, selection_prob)
-		# ---------------------------------------------------------------------------
+
 		# Sum the duration of planification with a low pass filter
 		current_time = datetime.datetime.now()
 		new_plan_time = (current_time - old_time).total_seconds()
 		old_plan_time = get_duration(self.dict_duration, current_state)
 		filtered_time = low_pass_filter(0.6, old_plan_time, new_plan_time)
-		set_duration(self.dict_duration, current_state, filtered_time)#update time
-		# ---------------------------------------------------------------------------
+		set_duration(self.dict_duration, current_state, filtered_time) #update time
 		# Logs
-			# -----------------------------------------------------------------------
 		time = 0.0
 		if who_plan["MB"] == True:
 			time += plan_time["MB"] # plan time, not the time for replays in case there are replays
 		if who_plan["MF"] == True:
 			time += plan_time["MF"]
-		# -----------------------------------------------------------------------
 		if who_plan["MF"] == True:
 			if self.log == True or True:# or true because log doenst work for other fonction
-				# print(self.fileName)
 				self.MC_log.write(str(action_count)+" "+str(current_state)+" "+str(reward_obtained)+" "+str(time)+" MF "
-							  +str(final_actions_prob["MF"])+" "+str(self.norm_entropy["MF"])+" "+str(self.norm_entropy["MB"])
+							  +str(final_actions_prob["MF"])+" "+str(self.norm_entropy["MF"])+" "+
+								  str(self.norm_entropy["MB"])
 							  +" "+str(filtered_time)+ " " + str(self.agent_model_free.module.replay_cycles)+
 							  " "+str(self.agent_model_free.module.replay_time)+"\n")
 			winner = "MF"
@@ -349,7 +299,8 @@ class MetaController:
 		elif who_plan["MB"] == True:
 			if self.log == True or True:# or true because log doenst work for other fonction
 				self.MC_log.write(str(action_count)+" "+str(current_state)+" "+str(reward_obtained)+" "+str(time)+" MB "
-							  +str(final_actions_prob["MB"])+" "+str(self.norm_entropy["MF"])+" "+str(self.norm_entropy["MB"])+
+							  +str(final_actions_prob["MB"])+" "+str(self.norm_entropy["MF"])+" "+
+								  str(self.norm_entropy["MB"])+
 							  " "+str(filtered_time)+" "+str(self.agent_model_based.module.infer_cycles)
 							  +" "+str(self.agent_model_based.module.replay_cycles)
 							  + " " + str(self.agent_model_based.module.replay_time)
@@ -357,7 +308,5 @@ class MetaController:
 							  + " " + str(self.agent_model_based.module.bi_replay_time)
 							  +"\n")
 			winner = "MB"
-		# --------------------------------------------------------------------------
 		return winner, who_plan
-		# ---------------------------------------------------------------------------
 

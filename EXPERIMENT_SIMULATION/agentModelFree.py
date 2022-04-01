@@ -21,7 +21,6 @@ class AgentModelFree:
 	"""
 	This class implements a model-free agent.
     """
-
 	def __init__(self, agent_model_free_module, experiment, map_file, initial_variables, action_space,
 				 state_space, boundaries_exp, parameters_agent_MF, options_log):
 		"""
@@ -42,7 +41,6 @@ class AgentModelFree:
 		elif self.module_type == 'q-learning-replay-budget':
 			self.module = QLearningReplayBudget(experiment, map_file, initial_variables, action_space, boundaries_exp,
 												parameters_agent_MF, options_log)
-
 
 	def reset(self):
 		if self.module_type in ['q-learning-replay', 'q-learning-replay-budget']:

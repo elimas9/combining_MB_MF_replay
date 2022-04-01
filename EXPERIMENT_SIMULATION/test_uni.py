@@ -2,7 +2,7 @@ from turtlebotSimulator import *
 
 # start program by terminal command as indicated in the readme
 def main():
-	experiment, map_file, key_states_file, parameters_file, options = manage_arguments()# handles and returns the
+	experiment, map_file, key_states_file, parameters_file, options = manage_arguments() # handles and returns the
 	# options chosen by the terminal command
 
 	parameters_agent_MF, parameters_agent_MB, beta_MC = parse_parameters(parameters_file)

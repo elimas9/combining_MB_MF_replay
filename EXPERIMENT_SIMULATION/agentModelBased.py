@@ -36,10 +36,7 @@ class AgentModelBased:
 			self.module = ValueIterationShuffleBudget(experiment, map_file, initial_variables, action_space,
 													  boundaries_exp, parameters_agent_MB, options_log)
 
-
-
 	def reset(self):
-
 		self.module.infer_cycles = 0
 
 		if self.module_type in ['value-iteration-shuffle-replay-budget-time-win-a'

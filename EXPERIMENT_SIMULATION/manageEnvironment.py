@@ -18,7 +18,6 @@ def initialize_environement_from_file(name_file,key_states_file,action_space):
 	"""
 	# Initialize the environment from a json-compatible file
 	"""
-	# -------------------------------------------------------------------------------
 	# Load the list of initial states and the rewarded state
 	init = list()
 	listState = list()
@@ -39,12 +38,15 @@ def initialize_environement_from_file(name_file,key_states_file,action_space):
 	listState=Buildlist_state(name_file,action_space)
 	size=len(listState)
 	environement=Environement(listState,reward,listDepartState,size,action_space)
-	# -------------------------------------------------------------------------------
 	return environement
-	# -------------------------------------------------------------------------------
 
 	
-def get_id_around(n,id,size): # function that finds the id of the next state to be reached by chosing the action n
+def get_id_around(n,id,size):
+	'''
+	:param n: action
+	:return: the id of the next state to be reached
+	'''
+
 	i=id%size
 	j=id//size
 	i_around = -1
@@ -75,34 +77,47 @@ def get_id_around(n,id,size): # function that finds the id of the next state to 
 		i_around=i-1
 		j_around=j+1
 
-	if i_around <0 or i_around >size-1 or j_around>size-1 or j_around<0: # if the action leads to a movement outside of the map borders, the agent doen't change its position
+	if i_around <0 or i_around >size-1 or j_around>size-1 or j_around<0: # if the action leads to a movement outside
+		# of the map borders, the agent doen't change its position
 			id_around=id
 	else :
 		id_around=j_around*size+i_around
-	
-	
+
 	return id_around
 
 	
-def idToCoord(id,size):# function that returns the matrix coordinates i and j depending on the State id
+def idToCoord(id,size):
+	'''
+	:param id: State id
+	:return: the matrix coordinates i and j
+	'''
 	i=id%size
 	j=id//size
 	return i, j
 
-def CoordToId(i,j,size):# function that returns the State id depending on the ,matrix coordinates i and j (i = X-axis, j = Y-axis)
+def CoordToId(i,j,size):
+	'''
+	:param i: matrix coordinates (X-axis)
+	:param j: matrix coordinates (Y-axis)
+	:param size:
+	:return: State id
+	'''
 	return j*size + i
 
-def initialize_environement_determinist(size,numberA,goal,win_reward,listDepartState):# create size*size square map with determinist outcome numberA =4 or 8 map 
-	''' id representation 
+def initialize_environement_determinist(size,numberA,goal,win_reward,listDepartState):
+	'''
+	:param numberA: =4 or 8 map
+	:return: size*size square map with determinist outcome
+
+	id representation
 		1 2 3 
 		4 5 6 
 		7 8 9 
 	'''
-	
 	listState = [list()] * (size*size)
 
 	for i in range(size*size):
-		listT=[list()] * numberA#listTransition
+		listT=[list()] * numberA  # listTransition
 		id=i
 		for action in range(numberA):
 			listT[action]=[{"state":get_id_around(action,id,size), "prob":1}]
@@ -114,7 +129,6 @@ def initialize_environement_determinist(size,numberA,goal,win_reward,listDepartS
 
 
 def update_robot_position(environement, start, action):
-	
 	"""
 	Simulate the effect of the robot's decision on the environement, that is to say,
 	the identify of new state reaches after do the action in the previous state and 
@@ -122,21 +136,18 @@ def update_robot_position(environement, start, action):
 
 	Here, start is not the start of an experiment, but the current position of the bot.
 	"""
-	start = int(start) #amelioration possible ne plus passer par des str en entrée
-	# -------------------------------------------------------------------------------
-	if environement.reward["state"]==start:
+	start = int(start)
+	if environement.reward["state"] == start:
 		
 		arrival = environement.chooseDepart()
 	else:
 		arrival = environement.listState[start].chooseState(action)
 			
-	if environement.reward["state"]==arrival:
-		reward= environement.reward["value"]
+	if environement.reward["state"] == arrival:
+		reward = environement.reward["value"]
 	else:
-		reward= 0
-	# ---------------------------------------------------------------------------
+		reward = 0
 	return reward, str(arrival)
-	# -------------------------------------------------------------------------------
 
 
 

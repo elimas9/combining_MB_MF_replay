@@ -21,21 +21,46 @@ def manage_arguments():
 	"""
 	Manage the arguments of the script
 	"""
-	usage = "usage: main.py [options] [the number of experiment][the file that containts the structure of the environemnt][the file that contains the list of key states] [the file that contains the parameters of each expert]"
+	usage = "usage: main.py [options] [the number of experiment][the file that containts the structure of the " \
+			"environemnt][the file that contains the list of key states] [the file that contains the parameters of each" \
+			"expert]"
 	parser = OptionParser(usage)
-	parser.add_option("-c", "--criterion", action = "store", type = "string", dest = "criterion", help = "This option is the criterion used for the trade-off betwen the two experts", default = "random")
-	parser.add_option("-f", "--model_free_type", action = "store", type = "string", dest = "agent_model_free_module_type", help = "This option is the module used by the model free expert/agent", default = "q-learning")
-	parser.add_option("-b", "--model_based_type", action = "store", type = "string", dest = "agent_model_based_module_type", help = "This option is the module used by the model based expert/agent", default = "value-iteration-shuffle")
-	parser.add_option("-k", "--coeff_kappa", action = "store", type = "float", dest = "coeff_kappa", help = "This option is the coefficient use by the kappa parameter to weight the time", default = 1.0)
-	parser.add_option("-r", "--max_reward", action = "store", type = "int", dest = "max_reward", help = "This option is the maximum cumulated reward that the agent will reach before to stop.", default = 10000)
-	parser.add_option("-d", "--duration", action = "store", type = "int", dest = "duration", help = "This option is the maximum duration during which the agent will work.", default = 100000)
-	parser.add_option("-w", "--window_size", action = "store", type = "int", dest = "window_size", help = "This option is the size of the window of transitions memorized by the agent.", default = 30)
-	parser.add_option("-n", "--new_goal", action = "store_true",dest = "change_goal", help = "This option says if the goal will change during the experiment", default = False)
-	parser.add_option("-g", "--file_goal", action = "store", type = "string",dest = "file_goal", help = "This option is the file if goal will change during the experiment", default = "Goals.txt")
-	parser.add_option("-a", "--add_wall", action = "store_true", dest = "add_wall", help = "This option says if a wall is added during the experiment", default = False)
-	parser.add_option("-z", "--file_wall", action = "store",type = "string", dest = "file_wall", help = "This option is the file if a wall is added during the experiment", default = "Walls.txt")
-	parser.add_option("-l", "--log", action = "store_true", dest = "log", help =  "This option permit to no log the data.", default = False)
-	parser.add_option("-s", "--summary", action = "store_true", dest = "summary", help = "This option permit to make a summary of the data in one file to the grid search.", default = False)
+	parser.add_option("-c", "--criterion", action = "store", type = "string", dest = "criterion",
+					  help = "This option is the criterion used for the trade-off betwen the two experts",
+					  default = "random")
+	parser.add_option("-f", "--model_free_type", action = "store", type = "string",
+					  dest = "agent_model_free_module_type",
+					  help = "This option is the module used by the model free expert/agent", default = "q-learning")
+	parser.add_option("-b", "--model_based_type", action = "store", type = "string",
+					  dest = "agent_model_based_module_type",
+					  help = "This option is the module used by the model based expert/agent",
+					  default = "value-iteration-shuffle")
+	parser.add_option("-k", "--coeff_kappa", action = "store", type = "float", dest = "coeff_kappa",
+					  help = "This option is the coefficient use by the kappa parameter to weight the time",
+					  default = 1.0)
+	parser.add_option("-r", "--max_reward", action = "store", type = "int", dest = "max_reward",
+					  help = "This option is the maximum cumulated reward that the agent will reach before to stop.",
+					  default = 10000)
+	parser.add_option("-d", "--duration", action = "store", type = "int", dest = "duration",
+					  help = "This option is the maximum duration during which the agent will work.",
+					  default = 100000)
+	parser.add_option("-w", "--window_size", action = "store", type = "int", dest = "window_size",
+					  help = "This option is the size of the window of transitions memorized by the agent.",
+					  default = 30)
+	parser.add_option("-n", "--new_goal", action = "store_true",dest = "change_goal",
+					  help = "This option says if the goal will change during the experiment", default = False)
+	parser.add_option("-g", "--file_goal", action = "store", type = "string",dest = "file_goal",
+					  help = "This option is the file if goal will change during the experiment",
+					  default = "Goals.txt")
+	parser.add_option("-a", "--add_wall", action = "store_true", dest = "add_wall",
+					  help = "This option says if a wall is added during the experiment", default = False)
+	parser.add_option("-z", "--file_wall", action = "store",type = "string", dest = "file_wall",
+					  help = "This option is the file if a wall is added during the experiment", default = "Walls.txt")
+	parser.add_option("-l", "--log", action = "store_true", dest = "log",
+					  help =  "This option permit to no log the data.", default = False)
+	parser.add_option("-s", "--summary", action = "store_true", dest = "summary",
+					  help = "This option permit to make a summary of the data in one file to the grid search.",
+					  default = False)
 	(options, args) = parser.parse_args()
 
 	if len(args) != 4:
@@ -51,7 +76,6 @@ def manage_arguments():
 def parse_parameters(parameters_file):
 	"""
 	Parse the file that contains the parametersStep
-
 	"""
 	with open(parameters_file,'r') as file1:
 		for line in file1:
@@ -84,7 +108,8 @@ def parse_parameters(parameters_file):
 
 # -------------  THIS FUNCTION SIMULATES ONE CYCLE OF THE TURTLEBOT EXPERIMENT ---------------------
 def oneCycle(environement,options, pbar, meta_controller_system, who_plan_global, who_plan_local, agent_model_free,
-			 agent_model_based, current_state, cumulated_reward, reward_obtained, previous_state, final_decision, listWall,listGoal,switchGoal,switchWall,path):
+			 agent_model_based, current_state, cumulated_reward, reward_obtained, previous_state, final_decision,
+			 listWall,listGoal,switchGoal,switchWall,path):
 	action_count = environement.action_count
 	goalhaschange=False
 	wallhaschange=False
@@ -111,9 +136,11 @@ def oneCycle(environement,options, pbar, meta_controller_system, who_plan_global
 					for duoState in i["list_wall"][0]:
 						
 						if duoState["direction"]==1:
-							environement.addWalluni(environement.listState[ duoState["state1"]],environement.listState[duoState["state2"]])
+							environement.addWalluni(environement.listState[ duoState["state1"]],
+													environement.listState[duoState["state2"]])
 						else:
-							environement.addWall(environement.listState[duoState["state1"]],environement.listState[duoState["state2"]])
+							environement.addWall(environement.listState[duoState["state1"]],
+												 environement.listState[duoState["state2"]])
 				else:
 					
 					if path[0] >= path[1]: #you can change the condition to follow
@@ -121,24 +148,24 @@ def oneCycle(environement,options, pbar, meta_controller_system, who_plan_global
 					else:
 						n=0
 					for duoState in i["list_wall"][n]:
-						
-						
 						if duoState["direction"]==1:
 							
-							environement.addWalluni(environement.listState[duoState["state1"]],environement.listState[duoState["state2"]])
+							environement.addWalluni(environement.listState[duoState["state1"]],
+													environement.listState[duoState["state2"]])
 						else:
 							
-							environement.addWall(environement.listState[duoState["state1"]],environement.listState[duoState["state2"]])
-							print("wall:",environement.listState[duoState["state1"]].id,environement.listState[duoState["state2"]].id)
+							environement.addWall(environement.listState[duoState["state1"]],
+												 environement.listState[duoState["state2"]])
+							print("wall:",environement.listState[duoState["state1"]].id,
+								  environement.listState[duoState["state2"]].id)
 						
 			if i["iter"]>switchWall and i["iter"]<swWtemp:
 				swGtemp=i["iter"]
 		switchWall=swWtemp
 		wallhaschange=True
 		environement.printEnvironementFile()
-	# ---------------------------------------------------------------------------
-	# Get the probabilities of selection of the two expert for the current state accoring to the q-values
 
+	# Get the probabilities of selection of the two expert for the current state accoring to the q-values
 	if meta_controller_system.criterion == 'MB_only':
 		selection_prob_MB = agent_model_based.module.get_actions_prob(current_state)
 		selection_prob = {"MF": selection_prob_MB, "MB": selection_prob_MB}
@@ -148,8 +175,6 @@ def oneCycle(environement,options, pbar, meta_controller_system, who_plan_global
 		meta_controller_system.run(action_count, reward_obtained, current_state,plan_time, selection_prob)
 		decision_MB = agent_model_based.module.run(action_count, cumulated_reward, reward_obtained, previous_state,
 											   final_decision, current_state, who_plan_local[current_state]["MB"])
-			
-																	   								   
 		decision_MF = -1		
 		decisions = {"MF": decision_MF, "MB": decision_MB}
 		final_decision = decisions["MB"]
@@ -177,7 +202,7 @@ def oneCycle(environement,options, pbar, meta_controller_system, who_plan_global
 		plan_time_MF = agent_model_free.module.get_plan_time(current_state)
 		plan_time_MB = agent_model_based.module.get_plan_time(current_state)
 		plan_time = {"MF": plan_time_MF, "MB": plan_time_MB}
-			# Choose which expert to inhibit with the MC using a criterion of coordination
+		# Choose which expert to inhibit with the MC using a criterion of coordination
 		first_visit = False
 		if current_state not in who_plan_local.keys():
 			first_visit = True
@@ -232,6 +257,7 @@ def oneCycle(environement,options, pbar, meta_controller_system, who_plan_global
 	return environement, selection_prob, meta_controller_system, who_plan_global, who_plan_local, agent_model_free,\
 		   agent_model_based, current_state, cumulated_reward, reward_obtained, previous_state, final_decision,\
 		   listWall,listGoal,switchGoal,switchWall,path
+
 
 def StartExperiment(environement,experiment,options,parameters_agent_MF, parameters_agent_MB, beta_MC,map_file):
 	agent_model_free_module_type = options.agent_model_free_module_type
@@ -288,7 +314,8 @@ def StartExperiment(environement,experiment,options,parameters_agent_MF, paramet
 	agent_model_free.module.agent_model_based = agent_model_based
 	agent_model_based.module.agent_model_free = agent_model_free
 
-	meta_controller_system = MetaController(agent_model_based, agent_model_free,experiment, map_file, initial_variables, boundaries_exp, beta_MC, criterion, coeff_kappa, options_log)
+	meta_controller_system = MetaController(agent_model_based, agent_model_free,experiment, map_file, initial_variables,
+											boundaries_exp, beta_MC, criterion, coeff_kappa, options_log)
 
 	# Initialize parameters and variables for the loop of simulation
 	environement.action_count = initial_variables["action_count"] + 1
@@ -323,8 +350,8 @@ def StartExperiment(environement,experiment,options,parameters_agent_MF, paramet
 																agent_model_based, current_state, cumulated_reward,
 																reward_obtained, previous_state, final_decision,
 																listWall,listGoal,switchGoal,switchWall,path)
-		
 
+		# check if the agent has not found the reward in 10000 iterations
 		if environement.action_count == 10000 and cumulated_reward == 0:
 			print(Fore.GREEN + "!!! THE AGENT HAS NOT FOUND THE REWARD IN 10000 ITERATIONS !!!")
 			print(Style.RESET_ALL)
