@@ -238,7 +238,7 @@ rank_cheb_dist = dict(sorted(cheb_dist.items(), key=operator.itemgetter(1))).key
 print(f'rank_cheb_dist: {rank_cheb_dist}')
 
 
-plt.xlabel("Cumulative inference cost (s)")
+plt.xlabel("Cumulative inference cost (a.u.)")
 plt.ylabel("Cumulative reward (a.u.)")
 
 colors = {"MF": "pink", "MF - replay budget inf": "blueviolet", "MF - replay budget 200": "violet",
