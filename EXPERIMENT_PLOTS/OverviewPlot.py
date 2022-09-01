@@ -166,7 +166,7 @@ c_mb_b200, c_stat_mb_b200, _, c_s_mb_b200 = getMeanVarTime(experiences_mb_b200)
 
 print(" \n  -------> Log processing done ")
 
-def plot_pareto_frontier(Xs, Ys, minX=0, maxY=673.33):
+def plot_pareto_frontier(Xs, Ys, minX=0, maxY=673.33, ax=None):
     '''Pareto frontier selection process'''
     sorted_list = sorted([[Xs[i], Ys[i]] for i in range(len(Xs))], reverse=minX)
     pareto_front = [sorted_list[0]]
@@ -185,10 +185,11 @@ def plot_pareto_frontier(Xs, Ys, minX=0, maxY=673.33):
 
 
 # 2D overview plot
-mlb.setup_page(textwidth=6.97522, columnwidth=3.36305, fontsize=11)
+mlb.setup_page(textwidth=6.97522, columnwidth=3.36305, fontsize=10)
 
 ms = 7
 
+# fig = mlb.figure_textwidth(height=6.97522*0.8+mlb.get_default_figsize()[1]*0.48)
 mlb.figure(width=6.97522*0.8, height=6.97522*0.8)
 
 # detect the max and min values for the performances and the inference cost among the median of the tested algorithms

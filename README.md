@@ -12,8 +12,7 @@ sufficiently trained by observation of MB decisions
 ([Dromnelle(2020)](https://link.springer.com/chapter/10.1007/978-3-030-64313-3_8)). Nevertheless, replay processes have not been
 included in this architecture yet, and this is what has been explored with the presented code.
   
-> This code goes with the following submission: Massi et al. (2022) Model-based and model-free
-> replay mechanisms for reinforcement learning in neurorobotics. Submitted.
+>This code goes with the following paper: [Massi(2022)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9263850/pdf/fnbot-16-864380.pdf)
 
 ## Contributors
 - Rémi Dromnelle
